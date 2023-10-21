@@ -1,6 +1,7 @@
 import app from '../app'
 import request from 'supertest'
 import { productsdata } from '../entities/product.entity';
+import { expect } from '@jest/globals';
 
 describe('Cart API', () => {
   let userId;
@@ -9,24 +10,69 @@ describe('Cart API', () => {
     userId = 'eb5a26af-6e4c-4f31-a9b1-3450d42ac66c';
   });
 
-  it('should create a user cart', async () => {
-    const response = await request(app)
+  it('should create an order', async () => {
+
+    // Create User cart
+    const newCart = await request(app)
       .post('/api/profile/cart')
       .set('x-user-id', userId);
 
-    expect(response.status).toBe(201);
-    expect(response.body.data.cart.id).not.toBe(null);
-    expect(response.body.data.cart.items).toHaveLength(0);
-    expect(response.body.data.totalPrice).toBe(0);
-  });
+    const cartid = newCart.body.data.cart.id
+    const cartUpdate = {
+      id: cartid,
+      items: [
+        {
+          product: productsdata[0],
+          count: 2,
+        },
+        {
+          product: productsdata[1],
+          count: 3,
+        },
+      ],
+    };
 
-  it('should get a user cart', async () => {
-    const response = await request(app)
-      .get('/api/profile/cart')
-      .set('x-user-id', userId);
+    const updateCart = await request(app)
+      .put('/api/profile/cart')
+      .set('x-user-id', userId)
+      .send(cartUpdate);
 
-    expect(response.status).toBe(200);
-    expect(response.body.data.cart.id).not.toBe(null);
+
+    const checkoutCart = await request(app)
+      .post('/api/profile/cart/checkout')
+      .set('x-user-id', userId)
+
+    expect(checkoutCart.status).toBe(200);
+    expect(checkoutCart.body.data).toMatchObject({
+      order: {
+        id: expect.any(String),
+        userId: userId,
+        cartId: cartid,
+        items:[
+          {
+            product: productsdata[0],
+            count: 2,
+          },
+          {
+            product: productsdata[1],
+            count: 3,
+          },
+        ],
+        payment: {
+          type: 'paypal',
+          address: 'London',
+          creditCard: '1234-1234-1234-1234'
+        },
+        delivery: {
+          type: 'post',
+          address: 'London'
+        },
+        comments: '',
+        status: 'created',
+        total: productsdata[0].price * 2 + productsdata[1].price * 3,
+      }
+    });
+    // Add more assertions as needed
   });
 
   it('should update a user cart', async () => {
@@ -56,6 +102,25 @@ describe('Cart API', () => {
 
   });
 
+  it('should create a user cart', async () => {
+    const response = await request(app)
+      .post('/api/profile/cart')
+      .set('x-user-id', userId);
+
+    expect(response.status).toBe(201);
+    expect(response.body.data.cart.id).not.toBe(null);
+    expect(response.body.data.cart.items).toHaveLength(0);
+    expect(response.body.data.totalPrice).toBe(0);
+  });
+
+  it('should get a user cart', async () => {
+    const response = await request(app)
+      .get('/api/profile/cart')
+      .set('x-user-id', userId);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.cart.id).not.toBe(null);
+  });
 
   it('should return 401 when x-user-id header is missing', async () => {
     const response = await request(app).get('/api/profile/cart');
@@ -64,7 +129,6 @@ describe('Cart API', () => {
       'Header x-user-id is missing or no user with such id'
     );
   });
-
 
   it('should return 400 Bad Request', async () => {
     let cartid = null

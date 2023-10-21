@@ -24,7 +24,7 @@ export class CartRepository {
     const index = this.carts.findIndex(c => c.id === cart.id);
     if (index == -1)
       throw new Error('Cart not found')
-    this.carts[index] = cart;
+    this.carts[index] = { ...this.carts[index], ...cart };
     return cart;
   }
 
