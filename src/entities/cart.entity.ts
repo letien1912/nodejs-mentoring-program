@@ -1,30 +1,26 @@
-import { ProductEntity, product as bookProduct } from './product.entity'
+import { Entity, PrimaryKey, Property, OneToMany, ManyToOne } from '@mikro-orm/core';
+import { ProductEntity } from './product.entity';
 
-export interface Cart {
-  cart: CartEntity;
-  totalPrice: number;
-}
-
-export interface CartItemEntity {
+@Entity()
+export class CartItemEntity {
+  @ManyToOne(() => ProductEntity)
   product: ProductEntity;
+
+  @Property()
   count: number;
 }
 
-export interface CartEntity {
+@Entity()
+export class CartEntity {
+  @PrimaryKey()
   id: string;
+
+  @Property()
   userId: string;
+
+  @Property({ default: false })
   isDeleted?: boolean;
+
+  @OneToMany(() => CartItemEntity, cartItem => cartItem.product)
   items: CartItemEntity[];
-}
-
-const cartItem: CartItemEntity = {
-  product: bookProduct,
-  count: 2,
-}
-
-export const cart: CartEntity = {
-  id: '1434fec6-cd85-420d-95c0-eee2301a971d',
-  userId: '0fe36d16-49bc-4aab-a227-f84df899a6cb',
-  isDeleted: false,
-  items: [cartItem],
 }

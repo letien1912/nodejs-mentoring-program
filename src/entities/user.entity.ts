@@ -1,7 +1,12 @@
-export interface UserEntity {
+import { Entity, OneToOne, PrimaryKey } from '@mikro-orm/core';
+import { CartEntity } from './cart.entity';
+
+@Entity()
+export class UserEntity {
+  @PrimaryKey()
   id: string; // uuid
+
+  @OneToOne(() => CartEntity, cart => cart.user)
+  cart: CartEntity;
 }
 
-export const userdata: UserEntity = {
-  id: 'eb5a26af-6e4c-4f31-a9b1-3450d42ac66c'
-}

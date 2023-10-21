@@ -4,6 +4,7 @@ import cors from 'cors';
 import { authenticationMiddleware, errorHandlerMiddleware } from './middleware/authentication.middleware';
 import { postCart, getCart, putCart, postCartCheckout } from './controllers/cart.controller';
 import { getProduct, getProducts } from './controllers/product.controller';
+import 'reflect-metadata';
 
 const app = express();
 const router = express.Router();

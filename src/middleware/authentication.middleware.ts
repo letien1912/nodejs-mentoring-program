@@ -32,7 +32,7 @@ export const errorHandlerMiddleware = (err: any, req: Request, res: Response, ne
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Ooops, something went wrong';
 
-  console.log(`[${ new Date().toISOString() }] ${ err.stack || err }`);
+  // console.log(`[${ new Date().toISOString() }] ${ err.stack || err }`);
 
   return res.status(statusCode).json({
     data: null,
